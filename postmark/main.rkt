@@ -17,11 +17,11 @@
   [postmark-send-email
    (->* (postmark?
          #:to addresses/c
-         #:from addresses/c
+         #:from string?
          #:subject string?)
         (#:cc (or/c false/c addresses/c)
          #:bcc (or/c false/c addresses/c)
-         #:reply-to (or/c false/c addresses/c)
+         #:reply-to (or/c false/c string?)
          #:tag (or/c false/c string?)
          #:text-body (or/c false/c string?)
          #:html-body (or/c false/c string?)
@@ -33,13 +33,13 @@
   [postmark-send-email-with-template
    (->* (postmark?
          #:to addresses/c
-         #:from addresses/c)
+         #:from string?)
         (#:template-id (or/c false/c exact-positive-integer?)
          #:template-alias (or/c false/c string?)
          #:template-model jsexpr?
          #:cc (or/c false/c addresses/c)
          #:bcc (or/c false/c addresses/c)
-         #:reply-to (or/c false/c addresses/c)
+         #:reply-to (or/c false/c string?)
          #:tag (or/c false/c string?)
          #:track-opens (or/c false/c string?)
          #:track-links track-links/c
@@ -86,7 +86,7 @@
    #:path "/email"
    #:json (remove-false-params
            (hasheq 'To          (addresses->string to)
-                   'From        (addresses->string from)
+                   'From        from
                    'Subject     subject
                    'Cc          (addresses->string cc)
                    'Bcc         (addresses->string bcc)
@@ -123,10 +123,10 @@
            (hasheq 'TemplateId    template-id
                    'TemplateAlias template-alias
                    'TemplateModel template-model
-                   'To            to
+                   'To            (addresses->string to)
                    'From          from
-                   'Cc            cc
-                   'Bcc           bcc
+                   'Cc            (addresses->string cc)
+                   'Bcc           (addresses->string bcc)
                    'ReplyTo       reply-to
                    'Tag           tag
                    'Headers       headers

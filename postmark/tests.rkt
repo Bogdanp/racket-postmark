@@ -97,6 +97,30 @@
                  'RequestData (hasheq 'To "bogdan@defn.io"
                                       'From "bogdan@defn.io"
                                       'Subject "hello"
-                                      'HtmlBody "<h1>Hi!</h1>")))))))
+                                      'HtmlBody "<h1>Hi!</h1>"))))
+
+      (test-case "joins address lists into a single string"
+        (check-equal?
+         (postmark-send-email (postmark "supersecret")
+                              #:to (list "bogdan@cleartype.io" "bogdan@defn.io")
+                              #:from "bogdan@defn.io"
+                              #:subject "hello"
+                              #:html-body "<h1>Hi!</h1>")
+         (hasheq 'ErrorCode 0
+                 'RequestData (hasheq 'To "bogdan@cleartype.io, bogdan@defn.io"
+                                      'From "bogdan@defn.io"
+                                      'Subject "hello"
+                                      'HtmlBody "<h1>Hi!</h1>")))))
+
+     (test-suite
+      "postmark-send-email-with-template"
+
+      (test-case "raises an error when neither template id nor alias is provided"
+        (check-exn
+         exn:fail:user?
+         (lambda ()
+           (postmark-send-email-with-template (postmark "invalid")
+                                              #:to "bogdan@defn.io"
+                                              #:from "bogdan@defn.io")))))))
 
   (run-tests postmark-tests))
