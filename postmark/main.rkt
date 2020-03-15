@@ -3,7 +3,6 @@
 (require json
          net/http-client
          racket/contract/base
-         racket/function
          racket/string)
 
 ;; Public ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
