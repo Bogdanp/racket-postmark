@@ -21,15 +21,15 @@ from Postmark.
 @section[#:tag "reference"]{Reference}
 
 @defstruct[postmark ([token string?])]{
-  A container for a Postmark token.
+  A client for the Postmark API.
 }
 
 @defproc[(postmark-send-email [client postmark?]
-                              [#:to to address/c]
+                              [#:to to addresses/c]
                               [#:from from string?]
                               [#:subject subject string?]
-                              [#:cc cc (or/c false/c address/c)]
-                              [#:bcc bcc (or/c false/c address/c)]
+                              [#:cc cc (or/c false/c addresses/c)]
+                              [#:bcc bcc (or/c false/c addresses/c)]
                               [#:reply-to reply-to (or/c false/c string?)]
                               [#:tag tag (or/c false/c string?)]
                               [#:text-body text-body (or/c false/c string?)]
@@ -44,13 +44,13 @@ from Postmark.
 }
 
 @defproc[(postmark-send-email-with-template [client postmark?]
-                                            [#:to to address/c]
+                                            [#:to to addresses/c]
                                             [#:from from string?]
                                             [#:template-id template-id (or/c false/c exact-positive-integer?)]
                                             [#:template-alias template-alias (or/c false/c string?)]
                                             [#:template-model template-model jsexpr?]
-                                            [#:cc cc (or/c false/c address/c)]
-                                            [#:bcc bcc (or/c false/c address/c)]
+                                            [#:cc cc (or/c false/c addresses/c)]
+                                            [#:bcc bcc (or/c false/c addresses/c)]
                                             [#:reply-to reply-to (or/c false/c string?)]
                                             [#:tag tag (or/c false/c string?)]
                                             [#:track-opens track-opens boolean?]
@@ -62,6 +62,9 @@ from Postmark.
   Raises an @racket[exn:fail:user?] if the token is invalid.
 }
 
-@deftogether[
-  (@defthing[address/c (or/c string? (listof string?))]
-   @defthing[track-links/c (or/c 'None 'HtmlAndText 'HtmlOnly 'TextOnly)])]
+@deftogether[(
+  @defthing[addresses/c (or/c string? (listof string?))]
+  @defthing[track-links/c (or/c 'None 'HtmlAndText 'HtmlOnly 'TextOnly)]
+)]{
+
+}

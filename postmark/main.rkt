@@ -9,6 +9,8 @@
 ;; Public ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide
+ addresses/c
+ track-links/c
  (contract-out
   [postmark-host (parameter/c string?)]
   [postmark-port (parameter/c exact-positive-integer?)]
