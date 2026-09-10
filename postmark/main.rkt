@@ -29,7 +29,8 @@
          #:track-opens (or/c #f string?)
          #:track-links track-links/c
          #:headers (or/c #f (hash/c symbol? string?))
-         #:metadata (or/c #f (hash/c symbol? string?))]
+         #:metadata (or/c #f (hash/c symbol? string?))
+         #:message-stream (or/c #f string?)]
         jsexpr?)]
   [postmark-send-email-with-template
    (->* [postmark?
@@ -45,7 +46,8 @@
          #:track-opens (or/c #f string?)
          #:track-links track-links/c
          #:headers (or/c #f (hash/c symbol? string?))
-         #:metadata (or/c #f (hash/c symbol? string?))]
+         #:metadata (or/c #f (hash/c symbol? string?))
+         #:message-stream (or/c #f string?)]
         jsexpr?)]))
 
 (define addresses/c
@@ -65,59 +67,63 @@
 
 (struct postmark (token))
 
-(define (postmark-send-email client
-                             #:to to
-                             #:from from
-                             #:subject subject
-                             #:cc [cc #f]
-                             #:bcc [bcc #f]
-                             #:reply-to [reply-to #f]
-                             #:tag [tag #f]
-                             #:text-body [text-body #f]
-                             #:html-body [html-body #f]
-                             #:track-opens [track-opens #f]
-                             #:track-links [track-links #f]
-                             #:headers [headers #f]
-                             #:metadata [metadata #f])
+(define (postmark-send-email
+         client
+         #:to to
+         #:from from
+         #:subject subject
+         #:cc [cc #f]
+         #:bcc [bcc #f]
+         #:reply-to [reply-to #f]
+         #:tag [tag #f]
+         #:text-body [text-body #f]
+         #:html-body [html-body #f]
+         #:track-opens [track-opens #f]
+         #:track-links [track-links #f]
+         #:headers [headers #f]
+         #:metadata [metadata #f]
+         #:message-stream [message-stream #f])
   (unless (or text-body html-body)
     (raise-user-error 'postmark-send-email "You must provide at least one of text-body or html-body."))
 
-  (make-post-request
+  (send-post-request
    client
    #:path "/email"
    #:json (remove-false-params
-           (hasheq 'To          (addresses->string to)
-                   'From        from
-                   'Subject     subject
-                   'Cc          (addresses->string cc)
-                   'Bcc         (addresses->string bcc)
-                   'ReplyTo     reply-to
-                   'Tag         tag
-                   'TextBody    text-body
-                   'HtmlBody    html-body
-                   'TrackOpens  track-opens
-                   'TrackLinks  (and track-links (symbol->string track-links))
-                   'Headers     headers
-                   'Metadata    metadata))))
+           (hasheq 'To            (addresses->string to)
+                   'From          from
+                   'Subject       subject
+                   'Cc            (addresses->string cc)
+                   'Bcc           (addresses->string bcc)
+                   'ReplyTo       reply-to
+                   'Tag           tag
+                   'TextBody      text-body
+                   'HtmlBody      html-body
+                   'TrackOpens    track-opens
+                   'TrackLinks    (and track-links (symbol->string track-links))
+                   'Headers       headers
+                   'Metadata      metadata
+                   'MessageStream message-stream))))
 
-(define (postmark-send-email-with-template client
-                                           #:template-id [template-id #f]
-                                           #:template-alias [template-alias #f]
-                                           #:template-model [template-model (hasheq)]
-                                           #:to to
-                                           #:from from
-                                           #:cc [cc #f]
-                                           #:bcc [bcc #f]
-                                           #:reply-to [reply-to #f]
-                                           #:tag [tag #f]
-                                           #:track-opens [track-opens #f]
-                                           #:track-links [track-links #f]
-                                           #:headers [headers #f]
-                                           #:metadata [metadata #f])
+(define (postmark-send-email-with-template
+         client
+         #:template-id [template-id #f]
+         #:template-alias [template-alias #f]
+         #:template-model [template-model (hasheq)]
+         #:to to
+         #:from from
+         #:cc [cc #f]
+         #:bcc [bcc #f]
+         #:reply-to [reply-to #f]
+         #:tag [tag #f]
+         #:track-opens [track-opens #f]
+         #:track-links [track-links #f]
+         #:headers [headers #f]
+         #:metadata [metadata #f]
+         #:message-stream [message-stream #f])
   (unless (or template-id template-alias)
     (raise-user-error 'postmark-send-email-with-template "You must provide at least one of template-id or template-alias."))
-
-  (make-post-request
+  (send-post-request
    client
    #:path "/email/withTemplate"
    #:json (remove-false-params
@@ -133,20 +139,21 @@
                    'Headers       headers
                    'TrackOpens    track-opens
                    'TrackLinks    (and track-links (symbol->string track-links))
-                   'Metadata      metadata))))
+                   'Metadata      metadata
+                   'MessageStream message-stream))))
 
 
 ;; Private ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define USER-AGENT
-  (format "Postmark Client for Racket ~a [0.1.0]" (version)))
+  (format "Postmark Client for Racket ~a [0.2]" (version)))
 
-(define (call-with-postmark-connection _client f)
-  (f (http-conn-open (postmark-host)
-                     #:port (postmark-port)
-                     #:ssl? (postmark-ssl?))))
+(define (call-with-postmark-connection _client proc)
+  (proc (http-conn-open (postmark-host)
+                        #:port (postmark-port)
+                        #:ssl? (postmark-ssl?))))
 
-(define (make-post-request client #:path path #:json json)
+(define (send-post-request client #:path path #:json json)
   (call-with-postmark-connection client
     (lambda (conn)
       (define-values (_status-line _ in)
@@ -161,7 +168,7 @@
 
       (define response (read-json in))
       (when (> (hash-ref response 'ErrorCode 0) 0)
-        (error 'make-post-request (hash-ref response 'Message)))
+        (error 'send-post-request (hash-ref response 'Message)))
 
       response)))
 

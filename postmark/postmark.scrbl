@@ -24,47 +24,55 @@ from Postmark.
   A client for the Postmark API.
 }
 
-@defproc[(postmark-send-email [client postmark?]
-                              [#:to to addresses/c]
-                              [#:from from string?]
-                              [#:subject subject string?]
-                              [#:cc cc (or/c false/c addresses/c)]
-                              [#:bcc bcc (or/c false/c addresses/c)]
-                              [#:reply-to reply-to (or/c false/c string?)]
-                              [#:tag tag (or/c false/c string?)]
-                              [#:text-body text-body (or/c false/c string?)]
-                              [#:html-body html-body (or/c false/c string?)]
-                              [#:track-opens track-opens boolean?]
-                              [#:track-links track-links (or/c false/c track-links/c)]
-                              [#:headers headers (or/c false/c (hash/c symbol? string?))]
-                              [#:metadata metadata (or/c false/c (hash/c symbol? string?))]) jsexpr?]{
-  Send an e-mail via Postmark.
+@defproc[(postmark-send-email
+          [client postmark?]
+          [#:to to addresses/c]
+          [#:from from string?]
+          [#:subject subject string?]
+          [#:cc cc (or/c #f addresses/c)]
+          [#:bcc bcc (or/c #f addresses/c)]
+          [#:reply-to reply-to (or/c #f string?)]
+          [#:tag tag (or/c #f string?)]
+          [#:text-body text-body (or/c #f string?)]
+          [#:html-body html-body (or/c #f string?)]
+          [#:track-opens track-opens boolean?]
+          [#:track-links track-links (or/c #f track-links/c)]
+          [#:headers headers (or/c #f (hash/c symbol? string?))]
+          [#:metadata metadata (or/c #f (hash/c symbol? string?))]
+          [#:message-stream message-stream (or/c #f string?)]) jsexpr?]{
+ Send an e-mail via Postmark.
 
-  Raises an @racket[exn:fail:user?] if the token is invalid.
+ Raises an @racket[exn:fail:user?] if the token is invalid.
+
+ @history[#:changed "0.2" @elem{Added the @racket[#:message-stream] argument.}]
 }
 
-@defproc[(postmark-send-email-with-template [client postmark?]
-                                            [#:to to addresses/c]
-                                            [#:from from string?]
-                                            [#:template-id template-id (or/c false/c exact-positive-integer?)]
-                                            [#:template-alias template-alias (or/c false/c string?)]
-                                            [#:template-model template-model jsexpr?]
-                                            [#:cc cc (or/c false/c addresses/c)]
-                                            [#:bcc bcc (or/c false/c addresses/c)]
-                                            [#:reply-to reply-to (or/c false/c string?)]
-                                            [#:tag tag (or/c false/c string?)]
-                                            [#:track-opens track-opens boolean?]
-                                            [#:track-links track-links (or/c false/c track-links/c)]
-                                            [#:headers headers (or/c false/c (hash/c symbol? string?))]
-                                            [#:metadata metadata (or/c false/c (hash/c symbol? string?))]) jsexpr?]{
-  Send a templated e-mail via Postmark.
+@defproc[(postmark-send-email-with-template
+          [client postmark?]
+          [#:to to addresses/c]
+          [#:from from string?]
+          [#:template-id template-id (or/c #f exact-positive-integer?)]
+          [#:template-alias template-alias (or/c #f string?)]
+          [#:template-model template-model jsexpr?]
+          [#:cc cc (or/c #f addresses/c)]
+          [#:bcc bcc (or/c #f addresses/c)]
+          [#:reply-to reply-to (or/c #f string?)]
+          [#:tag tag (or/c #f string?)]
+          [#:track-opens track-opens boolean?]
+          [#:track-links track-links (or/c #f track-links/c)]
+          [#:headers headers (or/c #f (hash/c symbol? string?))]
+          [#:metadata metadata (or/c #f (hash/c symbol? string?))]
+          [#:message-stream message-stream (or/c #f string?)]) jsexpr?]{
+ Send a templated e-mail via Postmark.
 
-  Raises an @racket[exn:fail:user?] if the token is invalid.
+ Raises an @racket[exn:fail:user?] if the token is invalid.
+
+ @history[#:changed "0.2" @elem{Added the @racket[#:message-stream] argument.}]
 }
 
 @deftogether[(
   @defthing[addresses/c (or/c string? (listof string?))]
   @defthing[track-links/c (or/c 'None 'HtmlAndText 'HtmlOnly 'TextOnly)]
 )]{
-
+ Contracts for addresses and tracking link config, respectively.
 }
