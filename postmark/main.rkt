@@ -16,43 +16,43 @@
   [postmark-ssl? (parameter/c boolean?)]
   [struct postmark ([token string?])]
   [postmark-send-email
-   (->* (postmark?
+   (->* [postmark?
          #:to addresses/c
          #:from string?
-         #:subject string?)
-        (#:cc (or/c false/c addresses/c)
-         #:bcc (or/c false/c addresses/c)
-         #:reply-to (or/c false/c string?)
-         #:tag (or/c false/c string?)
-         #:text-body (or/c false/c string?)
-         #:html-body (or/c false/c string?)
-         #:track-opens (or/c false/c string?)
+         #:subject string?]
+        [#:cc (or/c #f addresses/c)
+         #:bcc (or/c #f addresses/c)
+         #:reply-to (or/c #f string?)
+         #:tag (or/c #f string?)
+         #:text-body (or/c #f string?)
+         #:html-body (or/c #f string?)
+         #:track-opens (or/c #f string?)
          #:track-links track-links/c
-         #:headers (or/c false/c (hash/c symbol? string?))
-         #:metadata (or/c false/c (hash/c symbol? string?)))
+         #:headers (or/c #f (hash/c symbol? string?))
+         #:metadata (or/c #f (hash/c symbol? string?))]
         jsexpr?)]
   [postmark-send-email-with-template
-   (->* (postmark?
+   (->* [postmark?
          #:to addresses/c
-         #:from string?)
-        (#:template-id (or/c false/c exact-positive-integer?)
-         #:template-alias (or/c false/c string?)
+         #:from string?]
+        [#:template-id (or/c #f exact-positive-integer?)
+         #:template-alias (or/c #f string?)
          #:template-model jsexpr?
-         #:cc (or/c false/c addresses/c)
-         #:bcc (or/c false/c addresses/c)
-         #:reply-to (or/c false/c string?)
-         #:tag (or/c false/c string?)
-         #:track-opens (or/c false/c string?)
+         #:cc (or/c #f addresses/c)
+         #:bcc (or/c #f addresses/c)
+         #:reply-to (or/c #f string?)
+         #:tag (or/c #f string?)
+         #:track-opens (or/c #f string?)
          #:track-links track-links/c
-         #:headers (or/c false/c (hash/c symbol? string?))
-         #:metadata (or/c false/c (hash/c symbol? string?)))
+         #:headers (or/c #f (hash/c symbol? string?))
+         #:metadata (or/c #f (hash/c symbol? string?))]
         jsexpr?)]))
 
 (define addresses/c
   (or/c string? (listof string?)))
 
 (define track-links/c
-  (or/c false/c 'None 'HtmlAndText 'HtmlOnly 'TextOnly))
+  (or/c #f 'None 'HtmlAndText 'HtmlOnly 'TextOnly))
 
 (define postmark-host
   (make-parameter "api.postmarkapp.com"))
@@ -141,7 +141,7 @@
 (define USER-AGENT
   (format "Postmark Client for Racket ~a [0.1.0]" (version)))
 
-(define (call-with-postmark-connection client f)
+(define (call-with-postmark-connection _client f)
   (f (http-conn-open (postmark-host)
                      #:port (postmark-port)
                      #:ssl? (postmark-ssl?))))
@@ -149,7 +149,7 @@
 (define (make-post-request client #:path path #:json json)
   (call-with-postmark-connection client
     (lambda (conn)
-      (define-values (status-line _ in)
+      (define-values (_status-line _ in)
         (http-conn-sendrecv!
          conn path
          #:method "POST"
